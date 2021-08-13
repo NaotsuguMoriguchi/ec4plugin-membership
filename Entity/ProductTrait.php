@@ -16,9 +16,8 @@ trait ProductTrait
      * @var \Plugin\MemProduct\Entity\ProductSort
      *
      * @ORM\ManyToOne(targetEntity="Plugin\MemProduct\Entity\ProductSort")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="product_sort_id", referencedColumnName="id")
-     * })
+     * @ORM\JoinColumn(name="product_sort_id", 
+     *                  referencedColumnName="id")
      * @Eccube\FormAppend(
      *   auto_render=true,
      *   type="\Plugin\MemProduct\Form\Type\ProductSortType",

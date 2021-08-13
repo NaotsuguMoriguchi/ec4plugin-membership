@@ -9,6 +9,7 @@ use Eccube\Entity\AbstractEntity;
  * ProductSort
  *
  * @ORM\Table(name="plg_memproduct_product_type")
+ * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\Entity(repositoryClass="Plugin\MemProduct\Repository\ProductSortRepository")
  */
 class ProductSort extends AbstractEntity

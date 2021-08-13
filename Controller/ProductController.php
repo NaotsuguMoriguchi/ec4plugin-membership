@@ -75,9 +75,6 @@ class ProductController extends \Eccube\Controller\ProductController
      */
     public function index(Request $request, Paginator $paginator)
     {
-        if (!$this->isGranted('ROLE_USER')) {            
-            return $this->redirectToRoute('mypage_login');
-        }
         // Doctrine SQLFilter
         if ($this->BaseInfo->isOptionNostockHidden()) {
             $this->entityManager->getFilters()->enable('option_nostock_hidden');
@@ -112,8 +109,8 @@ class ProductController extends \Eccube\Controller\ProductController
         // paginator
         $searchData = $searchForm->getData();
                
-        $paidMember = $this->checkPaidMember($this->getUser());
-        $qb = $this->productRepository->getQueryBuilderBySearchDataWithCustomer($searchData, $paidMember);
+        $memLevel = $this->getMemberLevel($this->getUser());
+        $qb = $this->productRepository->getQueryBuilderBySearchDataWithCustomer($searchData, $memLevel);
         
 
         $event = new EventArgs(
@@ -239,9 +236,6 @@ class ProductController extends \Eccube\Controller\ProductController
      */
     public function detail(Request $request, Product $Product)
     {
-        if (!$this->isGranted('ROLE_USER')) {            
-            return $this->redirectToRoute('mypage_login');
-        }
 
         if(!$this->checkMatchMembership($Product)) {
             return $this->redirectToRoute('product_list');
@@ -292,9 +286,6 @@ class ProductController extends \Eccube\Controller\ProductController
      */
     public function addFavorite(Request $request, Product $Product)
     {
-        if (!$this->isGranted('ROLE_USER')) {            
-            return $this->redirectToRoute('mypage_login');
-        }
         
         if(!$this->checkMatchMembership($Product)) {
             return $this->redirectToRoute('product_list');
@@ -349,9 +340,6 @@ class ProductController extends \Eccube\Controller\ProductController
      */
     public function addCart(Request $request, Product $Product)
     {
-        if (!$this->isGranted('ROLE_USER')) {            
-            return $this->redirectToRoute('mypage_login');
-        }
         
         if(!$this->checkMatchMembership($Product)) {
             return $this->redirectToRoute('product_list');
@@ -473,14 +461,21 @@ class ProductController extends \Eccube\Controller\ProductController
     }
 
   
-    protected function checkPaidMember() {
+    protected function getMemberLevel() {
         $Customer = $this->getUser();
-        return $Customer && $Customer->getMembership() && $Customer->getMembership()->getSortNo() == 2;
+        $level = 1; // 
+        if($Customer != NULL && $Customer->getMembership()) {
+            $level = $Customer->getMembership()->getSortNo() + 1;
+        }
+        return $level;
     }
     
     protected function checkMatchMembership($Product) {
-        $paid = $this->checkPaidMember();        
-        // var_dump($Product->getProdsort()->getId());
-        return $paid ||  $Product->getProdsort()->getId() !== 2;        
+        $level = $this->getMemberLevel();                
+        $prodLevel = 1;
+        if($Product->getProdsort()) {
+            $prodLevel = $Product->getProdsort()->getSortNo();
+        }
+        return $level <= $prodLevel;
     }
 }

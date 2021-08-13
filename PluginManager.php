@@ -45,20 +45,26 @@ class PluginManager extends AbstractPluginManager
             return $Config;
         }      
         $sortNo = 1;
-        
         $Config1 = new ProductSort();
-        $Config1->setName('無料');
+        $Config1->setName('');
         $Config1->setSortNo($sortNo);
         
         $entityManager->persist($Config1);        
         $entityManager->flush($Config1);
-        
-        $Config2 = new ProductSort();
-        $Config2->setName('有料');
-        $Config2->setSortNo($sortNo + 1);
 
-        $entityManager->persist($Config2);
+        $Config2 = new ProductSort();
+        $Config2->setName('無料');
+        $Config2->setSortNo($sortNo + 1);
+        
+        $entityManager->persist($Config2);        
         $entityManager->flush($Config2);
+        
+        $Config3 = new ProductSort();
+        $Config3->setName('有料');
+        $Config3->setSortNo($sortNo + 2);
+
+        $entityManager->persist($Config3);
+        $entityManager->flush($Config3);
     }
 
    

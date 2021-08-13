@@ -45,10 +45,13 @@ class MemProductRepository extends \Eccube\Repository\ProductRepository
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getQueryBuilderBySearchDataWithCustomer($searchData, $paidMember)
+    public function getQueryBuilderBySearchDataWithCustomer($searchData, $level)
     {
+
         $qb = $this->createQueryBuilder('p')
-            ->andWhere('p.Status = 1');        
+            ->andWhere('p.Status = 1');
+            
+
 
         // category
         $categoryJoin = false;
@@ -63,13 +66,10 @@ class MemProductRepository extends \Eccube\Repository\ProductRepository
                 $categoryJoin = true;
             }
         }
+        $qq = sprintf('p.prodsort IS NULL OR p.prodsort<= %u', $level);
+        // var_dump($qq); exit();
+        $qb->andWhere($qq);
         
-        if(!$paidMember) {
-            $paidJoin = false;
-            $qb
-            ->andWhere('p.prodsort != 2');
-            $paidJoin = true;    
-        }
         // name
         if (isset($searchData['name']) && StringUtil::isNotBlank($searchData['name'])) {
             $keywords = preg_split('/[\s　]+/u', str_replace(['%', '_'], ['\\%', '\\_'], $searchData['name']), -1, PREG_SPLIT_NO_EMPTY);
@@ -123,6 +123,7 @@ class MemProductRepository extends \Eccube\Repository\ProductRepository
             $qb
                 ->addOrderBy('p.id', 'DESC');
         }
+        
 
         return $this->queries->customize(QueryKey::PRODUCT_SEARCH, $qb, $searchData);
     }
