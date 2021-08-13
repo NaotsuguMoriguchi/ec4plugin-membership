@@ -45,12 +45,10 @@ class MemProductRepository extends \Eccube\Repository\ProductRepository
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function getQueryBuilderBySearchDataWithCustomer($searchData, $Customer)
+    public function getQueryBuilderBySearchDataWithCustomer($searchData, $paidMember)
     {
-        $paidMember = $Customer && $Customer->getMembership() && $Customer->getMembership()->getSortNo() == 2;
         $qb = $this->createQueryBuilder('p')
-            ->andWhere('p.Status = 1');
-        
+            ->andWhere('p.Status = 1');        
 
         // category
         $categoryJoin = false;

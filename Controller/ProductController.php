@@ -112,7 +112,8 @@ class ProductController extends \Eccube\Controller\ProductController
         // paginator
         $searchData = $searchForm->getData();
                
-        $qb = $this->productRepository->getQueryBuilderBySearchDataWithCustomer($searchData, $this->getUser());
+        $paidMember = $this->checkPaidMember($this->getUser());
+        $qb = $this->productRepository->getQueryBuilderBySearchDataWithCustomer($searchData, $paidMember);
         
 
         $event = new EventArgs(
@@ -242,6 +243,10 @@ class ProductController extends \Eccube\Controller\ProductController
             return $this->redirectToRoute('mypage_login');
         }
 
+        if(!$this->checkMatchMembership($Product)) {
+            return $this->redirectToRoute('product_list');
+        }
+
         if (!$this->checkVisibility($Product)) {
             throw new NotFoundHttpException();
         }
@@ -289,6 +294,10 @@ class ProductController extends \Eccube\Controller\ProductController
     {
         if (!$this->isGranted('ROLE_USER')) {            
             return $this->redirectToRoute('mypage_login');
+        }
+        
+        if(!$this->checkMatchMembership($Product)) {
+            return $this->redirectToRoute('product_list');
         }
 
         $this->checkVisibility($Product);
@@ -343,6 +352,11 @@ class ProductController extends \Eccube\Controller\ProductController
         if (!$this->isGranted('ROLE_USER')) {            
             return $this->redirectToRoute('mypage_login');
         }
+        
+        if(!$this->checkMatchMembership($Product)) {
+            return $this->redirectToRoute('product_list');
+        }
+        
         // エラーメッセージの配列
         $errorMessages = [];
         if (!$this->checkVisibility($Product)) {
@@ -458,49 +472,15 @@ class ProductController extends \Eccube\Controller\ProductController
         }
     }
 
-    /**
-     * ページタイトルの設定
-     *
-     * @param  null|array $searchData
-     *
-     * @return str
-     */
-    protected function getPageTitle($searchData)
-    {
-        if (isset($searchData['name']) && !empty($searchData['name'])) {
-            return trans('front.product.search_result');
-        } elseif (isset($searchData['category_id']) && $searchData['category_id']) {
-            return $searchData['category_id']->getName();
-        } else {
-            return trans('front.product.all_products');
-        }
+  
+    protected function checkPaidMember() {
+        $Customer = $this->getUser();
+        return $Customer && $Customer->getMembership() && $Customer->getMembership()->getSortNo() == 2;
     }
-
-    /**
-     * 閲覧可能な商品かどうかを判定
-     *
-     * @param Product $Product
-     *
-     * @return boolean 閲覧可能な場合はtrue
-     */
-    protected function checkVisibility(Product $Product)
-    {
-        $is_admin = $this->session->has('_security_admin');
-
-        // 管理ユーザの場合はステータスやオプションにかかわらず閲覧可能.
-        if (!$is_admin) {
-            // 在庫なし商品の非表示オプションが有効な場合.
-            // if ($this->BaseInfo->isOptionNostockHidden()) {
-            //     if (!$Product->getStockFind()) {
-            //         return false;
-            //     }
-            // }
-            // 公開ステータスでない商品は表示しない.
-            if ($Product->getStatus()->getId() !== ProductStatus::DISPLAY_SHOW) {
-                return false;
-            }
-        }
-
-        return true;
+    
+    protected function checkMatchMembership($Product) {
+        $paid = $this->checkPaidMember();        
+        // var_dump($Product->getProdsort()->getId());
+        return $paid ||  $Product->getProdsort()->getId() !== 2;        
     }
 }
